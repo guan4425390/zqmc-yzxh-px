@@ -386,26 +386,43 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 (function() {
   const SLIDES = document.querySelectorAll('.slide');
   const TOTAL = SLIDES.length;
-  const INTERVAL = 7000;
+  // 每页停留时间(ms): 封面5s | 学校概况8s | 药学院8s | 课程体系8s | 课程安排10s | 评审规范9s | 行为规范10s | 结尾5s
+  const DURATIONS = [5000, 8000, 8000, 8000, 10000, 9000, 10000, 5000];
   let current = 0, timer = null, manualLock = false;
   const progressBar = document.getElementById('progressBar');
   const bgm = document.getElementById('bgm');
 
-  function show(idx) { SLIDES.forEach((s,i) => s.classList.toggle('active', i===idx)); current = idx; progressBar.style.width = ((idx+1)/TOTAL*100) + '%'; }
-  function next() { show((current+1)%TOTAL); }
+  function show(idx) {
+    SLIDES.forEach((s,i) => s.classList.toggle('active', i===idx));
+    current = idx;
+    progressBar.style.width = ((idx+1)/TOTAL*100) + '%';
+  }
+
+  function next() {
+    if (current >= TOTAL-1) { show(0); } else { show(current+1); }
+  }
   function prev() { show((current-1+TOTAL)%TOTAL); }
-  function startTimer() { stopTimer(); timer = setInterval(() => { if(!manualLock) next(); }, INTERVAL); }
-  function stopTimer() { if(timer) { clearInterval(timer); timer = null; } }
+
+  function startTimer() {
+    stopTimer();
+    timer = setTimeout(function tick() {
+      if (!manualLock) next();
+      timer = setTimeout(tick, DURATIONS[current]);
+    }, DURATIONS[current]);
+  }
+  function stopTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+  function resumeAfterManual() { manualLock = false; startTimer(); }
 
   document.addEventListener('keydown', function(e) {
     switch(e.key) {
       case 'ArrowRight': case 'ArrowDown': case ' ':
         e.preventDefault();
-        if(current < TOTAL-1) { manualLock=true; stopTimer(); next(); setTimeout(()=>{manualLock=false;startTimer();},INTERVAL); }
+        if (current < TOTAL-1) { manualLock=true; stopTimer(); next(); resumeAfterManual(); }
         break;
       case 'ArrowLeft': case 'ArrowUp':
         e.preventDefault();
-        if(current>0) { manualLock=true; stopTimer(); prev(); setTimeout(()=>{manualLock=false;startTimer();},INTERVAL); }
+        if (current>0) { manualLock=true; stopTimer(); prev(); resumeAfterManual(); }
         break;
       case 'f': case 'F':
         if(document.fullscreenElement) document.exitFullscreen();
@@ -417,22 +434,40 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 
   document.getElementById('deck').addEventListener('click', function(e) {
     if(e.target.closest('a,button,input,textarea,select')) return;
-    manualLock=true; stopTimer(); next();
-    setTimeout(()=>{manualLock=false;startTimer();},INTERVAL);
+    manualLock=true; stopTimer(); next(); resumeAfterManual();
   });
 
-  let touchX=0,touchY=0;
-  document.getElementById('deck').addEventListener('touchstart', e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;});
-  document.getElementById('deck').addEventListener('touchend', e=>{
-    const dx=e.changedTouches[0].clientX-touchX, dy=e.changedTouches[0].clientY-touchY;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){manualLock=true;stopTimer();if(dx<0)next();else prev();setTimeout(()=>{manualLock=false;startTimer();},INTERVAL);}
+  var touchX=0,touchY=0;
+  document.getElementById('deck').addEventListener('touchstart', function(e){touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend', function(e){
+    var dx=e.changedTouches[0].clientX-touchX, dy=e.changedTouches[0].clientY-touchY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){manualLock=true;stopTimer();if(dx<0)next();else prev();resumeAfterManual();}
   });
 
+  // 音乐自动播放：立即尝试 + 首次交互兜底
   bgm.volume = 0.25;
-  bgm.play().catch(()=>{
-    const play=()=>{bgm.play().catch(()=>{});document.removeEventListener('click',play);document.removeEventListener('keydown',play);};
-    document.addEventListener('click', play, {once:true});
-    document.addEventListener('keydown', play, {once:true});
+  bgm.load();
+  bgm.play().catch(function(){});
+
+  function tryPlayBgm() { bgm.play().catch(function(){}); }
+  document.addEventListener('click', tryPlayBgm, {once:true});
+  document.addEventListener('keydown', tryPlayBgm, {once:true});
+  document.addEventListener('touchstart', tryPlayBgm, {once:true});
+
+  // 图片加载失败兜底
+  document.querySelectorAll('img').forEach(function(img) {
+    img.addEventListener('error', function() {
+      this.style.display = 'none';
+      var p = this.parentElement;
+      if (p && p.classList.contains('img-card')) {
+        p.style.minHeight = '60px';
+        p.style.backgroundColor = '#ede0cd';
+        p.style.display = 'flex';
+        p.style.alignItems = 'center';
+        p.style.justifyContent = 'center';
+        p.innerHTML = '<span style="color:#7a6250;font-size:0.8rem">图片加载中...</span>';
+      }
+    });
   });
 
   show(0); startTimer();
