@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>肇庆医学院 · 应知应会培训</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ead7bc;
+  --bg-soft: #dfc9a8;
+  --bg-dark: #3c2a18;
+  --surface: #f5ede1;
+  --surface-2: #ede0cd;
+  --surface-dark: #4a3523;
+  --border: rgba(80,50,30,.14);
+  --border-strong: rgba(80,50,30,.28);
+  --text-1: #1f140b;
+  --text-2: #4a3523;
+  --text-3: #7a6250;
+  --text-light: #f0e6d8;
+  --text-light-2: #c8b89e;
+  --accent: #8b3a1a;
+  --accent-2: #b5642e;
+  --accent-3: #d4925c;
+  --good: #4a7c3f;
+  --warn: #c0862a;
+  --bad: #c0392b;
+  --red: #c0392b;
+  --grad-soft: linear-gradient(135deg, #ead7bc, #f5ede1);
+  --radius: 6px;
+  --radius-sm: 3px;
+  --radius-lg: 14px;
+  --shadow: 0 3px 16px rgba(40,20,8,.08);
+  --shadow-lg: 0 12px 40px rgba(40,20,8,.16);
+  --font-sans: 'Noto Sans SC', -apple-system, sans-serif;
+  --font-serif: 'Noto Serif SC', 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', 'Noto Serif SC', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text-1); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+.deck { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: var(--bg); }
+.slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 5vh 6vw; opacity: 0; pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; transform: translateX(40px); overflow: hidden; }
+.slide.is-active, .slide.active { opacity: 1; pointer-events: auto; transform: translateX(0); z-index: 2; }
+.slide::before { content: ''; position: absolute; inset: 0; z-index: -1; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139,90,43,.015) 2px, rgba(139,90,43,.015) 4px), repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(139,90,43,.01) 3px, rgba(139,90,43,.01) 6px); pointer-events: none; }
+
+.slide.dark { background: var(--bg-dark); color: var(--text-light); }
+.slide.dark .kicker { color: var(--accent-3); }
+.slide.dark .sub { color: var(--text-light-2); }
+.slide.dark .stat-card { background: var(--surface-dark); border-color: rgba(255,255,255,.1); }
+
+.slide.cover { text-align: center; }
+.cover-badge { display: inline-block; border: 2px solid var(--accent); color: var(--accent); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: .3em; padding: 6px 20px; border-radius: 2px; margin-bottom: 3vh; }
+.cover-title { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 900; line-height: 1.15; margin-bottom: 2vh; letter-spacing: .02em; }
+.cover-sub { font-family: var(--font-serif); font-size: clamp(1rem, 1.8vw, 1.5rem); color: var(--text-2); font-weight: 400; letter-spacing: .08em; }
+.cover-meta { margin-top: 6vh; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-3); letter-spacing: .2em; }
+
+.kicker { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1vh; }
+.h1 { font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 3.5rem); font-weight: 700; line-height: 1.2; margin-bottom: 3vh; }
+.h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 600; line-height: 1.3; margin-bottom: 2vh; }
+.sub { font-size: clamp(0.9rem, 1.3vw, 1.1rem); color: var(--text-2); line-height: 1.7; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; margin-top: 2vh; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5vw; margin-top: 2vh; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1.2vw; margin-top: 1.5vh; }
+
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5vh 1.8vw; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.stat-card.red-border { border-left: 5px solid var(--red); }
+.stat-card.dark-card { background: var(--surface-dark); border-color: rgba(255,255,255,.1); }
+.stat-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: .15em; margin-bottom: 1vh; }
+.stat-nb { font-family: var(--font-display); font-size: clamp(1.6rem, 3.2vw, 2.6rem); font-weight: 700; line-height: 1.1; margin-bottom: 0.8vh; }
+.stat-note { font-size: 0.85rem; color: var(--text-3); line-height: 1.5; }
+
+.info-row { display: flex; gap: 2vw; margin-top: 2vh; font-size: 0.95rem; color: var(--text-2); line-height: 1.8; }
+.info-col { flex: 1; }
+.info-col strong { color: var(--accent); font-weight: 600; display: block; margin-bottom: 0.5vh; }
+
+.timeline { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 2vh; padding: 0 1vw; position: relative; }
+.timeline::before { content: ''; position: absolute; top: 28px; left: 5%; right: 5%; height: 2px; background: var(--accent-2); opacity: .4; }
+.timeline-item { text-align: center; position: relative; z-index: 1; flex: 1; max-width: 180px; }
+.timeline-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); margin: 0 auto 1vh; }
+.timeline-dot.red { background: var(--red); }
+.timeline-year { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; }
+.timeline-text { font-size: 0.8rem; color: var(--text-3); margin-top: 0.3vh; line-height: 1.4; }
+
+.course-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 2vh; }
+.course-table th { background: var(--accent); color: #fff; padding: 1vh 1vw; text-align: left; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: .1em; text-transform: uppercase; }
+.course-table td { padding: 1.2vh 1vw; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.6; }
+.course-table tr:nth-child(even) td { background: var(--surface); }
+.course-table tr:last-child td { border-bottom: 2px solid var(--accent); }
+
+.callout { background: linear-gradient(135deg, rgba(139,58,26,.08), rgba(180,100,46,.05)); border-left: 4px solid var(--accent); padding: 2vh 2vw; border-radius: 0 var(--radius) var(--radius) 0; margin-top: 3vh; }
+.callout.red { border-left-color: var(--red); background: linear-gradient(135deg, rgba(192,57,43,.08), rgba(192,57,43,.04)); }
+.callout-quote { font-family: var(--font-serif); font-size: clamp(1rem, 1.8vw, 1.3rem); font-style: italic; color: var(--accent); }
+.callout.red .callout-quote { color: var(--red); }
+
+.img-card { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.img-card img { width: 100%; height: auto; display: block; object-fit: cover; max-height: 40vh; }
+.img-label { padding: 1vh 1.2vw; font-size: 0.75rem; color: var(--text-3); font-family: var(--font-mono); }
+
+.chrome { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 2.5vh 4vw; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: .15em; color: var(--text-3); z-index: 10; }
+.chrome span { opacity: .6; }
+.slide.dark .chrome { color: var(--text-light-2); }
+
+.foot { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 2vh 4vw; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: .12em; color: var(--text-3); opacity: .5; }
+.slide.dark .foot { color: var(--text-light-2); }
+
+.progress-bar { position: fixed; bottom: 0; left: 0; height: 3px; background: var(--accent); z-index: 100; transition: width 0.4s ease; }
+
+.badge { display: inline-block; background: var(--accent); color: #fff; font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: .15em; padding: 3px 12px; border-radius: 3px; }
+.badge.red { background: var(--red); }
+
+.em { color: var(--accent); font-weight: 700; }
+
+/* Countdown styles */
+.countdown-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2vw; margin-top: 3vh; }
+.countdown-card { text-align: center; padding: 3vh 1vw; border-radius: var(--radius-lg); background: var(--surface); border: 2px solid var(--border); }
+.countdown-card.highlight { border-color: var(--red); background: linear-gradient(135deg, rgba(192,57,43,.06), rgba(255,255,255,0)); }
+.countdown-date { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: var(--accent); }
+.countdown-card.highlight .countdown-date { color: var(--red); }
+.countdown-label { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: .2em; color: var(--text-3); margin-top: 0.5vh; }
+.countdown-card.highlight .countdown-label { color: var(--red); }
+
+.rule-item { display: flex; align-items: flex-start; gap: 1vw; padding: 1.5vh 0; border-bottom: 1px solid var(--border); }
+.rule-item:last-child { border-bottom: none; }
+.rule-icon { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--accent); min-width: 50px; text-align: center; }
+.rule-body { flex: 1; }
+.rule-title { font-weight: 700; font-size: 1rem; color: var(--text-1); margin-bottom: 0.3vh; }
+.rule-desc { font-size: 0.85rem; color: var(--text-3); line-height: 1.5; }
+
+.slide.end { text-align: center; background: var(--bg-dark); color: var(--text-light); }
+.slide.end .cover-title { color: var(--accent-3); }
+.slide.end .cover-sub { color: var(--text-light-2); margin-top: 3vh; }
+.slide.end .cover-meta { color: var(--text-light-2); }
+
+@media (max-width: 1024px) {
+  .slide { padding: 3vh 4vw; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+  .course-table { font-size: 0.75rem; }
+  .timeline { flex-wrap: wrap; gap: 1vh; }
+  .timeline::before { display: none; }
+  .info-row { flex-direction: column; }
+  .countdown-grid { grid-template-columns: 1fr 1fr 1fr; gap: 1vw; }
+}
+@media (max-width: 640px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .h1 { font-size: 1.8rem; }
+  .cover-title { font-size: 2rem; }
+  .countdown-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ============ SLIDE 1: 封面 ============ -->
+<section class="slide cover active">
+  <div class="cover-badge">肇庆医学院 · 药学院</div>
+  <h1 class="cover-title">应知应会培训</h1>
+  <p class="cover-sub">熟知校情院情 · 掌握应知应会 · 规范行为礼仪</p>
+  <div class="cover-meta">2026 · ZHAOQING MEDICAL COLLEGE</div>
+</section>
+
+<!-- ============ SLIDE 2: 学校概况 ============ -->
+<section class="slide">
+  <div class="chrome"><span>学校概况</span><span>02 / 08</span></div>
+  <div class="kicker">肇庆医学院</div>
+  <h1 class="h1">六十八载 · 砥砺奋进</h1>
+  <div class="timeline" style="margin-top:3vh">
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-year">1958</div><div class="timeline-text">中山医学院<br>肇庆分院</div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-year">2004</div><div class="timeline-text">肇庆医学<br>高等专科学校</div></div>
+    <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-year">2024</div><div class="timeline-text">肇庆医学院<br>（本科院校）</div></div>
+  </div>
+  <div class="info-row" style="margin-top:4vh">
+    <div class="info-col"><strong>校训</strong><span style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--accent)">大医精诚 · 知行合一</span></div>
+    <div class="info-col"><strong>办学定位</strong>面向基层，培养"下得去、留得住、用得好"的高素质应用型医药卫生人才</div>
+  </div>
+  <div class="grid-3" style="margin-top:3vh">
+    <div class="stat-card"><div class="stat-label">校区</div><div class="stat-nb">3</div><div class="stat-note">新区 · 鼎湖 · 端州<br>总面积约1100亩</div></div>
+    <div class="stat-card"><div class="stat-label">在校生</div><div class="stat-nb">≈15000</div><div class="stat-note">本科生约2500人<br>专科生约12500人</div></div>
+    <div class="stat-card"><div class="stat-label">专业设置</div><div class="stat-nb">29</div><div class="stat-note">11个本科专业<br>18个专科专业</div></div>
+  </div>
+  <div class="foot"><span>历史沿革 · 办学概况</span><span>02 / 08</span></div>
+</section>
+
+<!-- ============ SLIDE 3: 药学院简介 ============ -->
+<section class="slide">
+  <div class="chrome"><span>药学院简介</span><span>03 / 08</span></div>
+  <div class="kicker">药学院</div>
+  <h1 class="h1">立足肇庆 · 辐射广东</h1>
+  <div class="grid-2" style="margin-top:2vh">
+    <div>
+      <h2 class="h2" style="font-size:1.3rem;margin-bottom:1vh">办学定位</h2>
+      <p class="sub">立足肇庆、辐射广东、面向基层、服务社会，培养从事药品生产、经营和使用的高素质应用型药学人才。</p>
+    </div>
+    <div>
+      <h2 class="h2" style="font-size:1.3rem;margin-bottom:1vh">专业设置</h2>
+      <p class="sub">成立于2004年，设有<span class="em">药学</span>、中药学、药物制剂三个本科专业，药学是历史最长、规模最大的专业。</p>
+    </div>
+  </div>
+  <div class="grid-3" style="margin-top:3vh">
+    <div class="stat-card"><div class="stat-label">实训基地</div><div class="stat-nb">90+</div><div class="stat-note">校外实习实践基地<br>院内设模拟药房、药剂实训中心等</div></div>
+    <div class="stat-card"><div class="stat-label">毕业生</div><div class="stat-nb">2000+</div><div class="stat-note">已累计输送毕业生<br>近两年就业率超90%</div></div>
+    <div class="stat-card"><div class="stat-label">专业对口率</div><div class="stat-nb">86.5%</div><div class="stat-note">95%获高级职业技能证书<br>覆盖珠三角及粤东西北</div></div>
+  </div>
+  <div class="grid-2" style="margin-top:3vh;grid-template-columns: 1.2fr 0.8fr">
+    <div>
+      <h2 class="h2" style="font-size:1.2rem;margin-bottom:1vh">实践教学体系</h2>
+      <p class="sub">3所直属附属医院 + 79个校外实习基地，校内实训与校外实习相结合，覆盖药品生产、检验、经营、使用全链条。</p>
+    </div>
+    <div class="img-card"><img src="images/training3.jpeg" alt="实践教学" style="max-height:22vh;object-fit:cover"><div class="img-label">院内实训教学场景</div></div>
+  </div>
+  <div class="foot"><span>药学院 · 办学实力</span><span>03 / 08</span></div>
+</section>
+
+<!-- ============ SLIDE 4: 药学课程体系 ============ -->
+<section class="slide">
+  <div class="chrome"><span>药学专业</span><span>04 / 08</span></div>
+  <div class="kicker">专业认知</div>
+  <h1 class="h1">什么是药学？</h1>
+  <div class="grid-2" style="margin-top:2vh">
+    <div>
+      <p class="sub" style="font-size:1.1rem;line-height:1.8">药学是研究药物或药品的科学，揭示<span class="em">药物与机体相互作用</span>的规律；涵盖药物的来源、设计、合成、性状、作用机制、用途、分析鉴定、加工生产、经营使用及管理。</p>
+      <div class="callout" style="margin-top:2vh"><div class="callout-quote">"善研善成，懂医精药"</div></div>
+    </div>
+    <div><div class="img-card"><img src="images/pharm_intro3.png" alt="药学课程体系" style="max-height:28vh"><div class="img-label">药学专业课程体系与知识构成</div></div></div>
+  </div>
+  <div style="margin-top:3vh">
+    <h2 class="h2" style="font-size:1.2rem;margin-bottom:1vh">核心课程</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="badge">药物化学</span><span class="badge">药理学</span><span class="badge">药剂学</span><span class="badge">药物分析</span><span class="badge">天然药物化学</span><span class="badge">药用植物学</span><span class="badge">临床药物治疗学</span><span class="badge">生物药剂与药代动力学</span>
+    </div>
+  </div>
+  <div class="foot"><span>药学 · 专业认知与核心课程</span><span>04 / 08</span></div>
+</section>
+
+<!-- ============ SLIDE 5: 药学课程安排 ============ -->
+<section class="slide">
+  <div class="chrome"><span>药学专业</span><span>05 / 08</span></div>
+  <div class="kicker">实践教学</div>
+  <h1 class="h1">药学 · 四年课程安排</h1>
+  <table class="course-table">
+    <thead><tr><th>学年</th><th>主要课程与实践</th></tr></thead>
+    <tbody>
+      <tr><td style="font-family:var(--font-display);font-size:1.2rem;font-weight:700">第一学年</td><td>无机化学、有机化学I、分析化学、组织胚胎与解剖学等</td></tr>
+      <tr><td style="font-family:var(--font-display);font-size:1.2rem;font-weight:700">第二学年</td><td>有机化学II、物理化学、病原生物学与免疫学、机能实验学、仪器分析等</td></tr>
+      <tr><td style="font-family:var(--font-display);font-size:1.2rem;font-weight:700">第三学年</td><td>天然药物化学、药用植物学、药物化学、药理学、药剂学、药物分析、临床药物治疗学</td></tr>
+      <tr><td style="font-family:var(--font-display);font-size:1.2rem;font-weight:700">第四学年</td><td>生物药剂与药代动力学、波谱解析、生物技术制药、药学文献检索与论文写作、药学综合实训、毕业实习、毕业论文</td></tr>
+    </tbody>
+  </table>
+  <div class="grid-2" style="margin-top:3vh">
+    <div class="stat-card"><div class="stat-label">就业方向</div><div class="stat-nb" style="font-size:1.3rem">医院 · 药企 · 检验</div><div class="stat-note">医院药房、药学部、静脉药物配置中心；药品经营企业采购/验收/销售/质量管理；药品生产/检验；食品化妆品检验</div></div>
+    <div class="stat-card"><div class="stat-label">培养目标</div><div class="stat-nb" style="font-size:1.3rem">应用型药学人才</div><div class="stat-note">从事药学研究与教育、临床药学服务、制药工业技术应用的三种类型人才，面向基层、服务社会</div></div>
+  </div>
+  <div class="foot"><span>药学 · 课程安排与就业</span><span>05 / 08</span></div>
+</section>
+
+<!-- ============ SLIDE 6: 评审期间行为规范 ⭐ ============ -->
+<section class="slide dark">
+  <div class="chrome"><span>重要通知</span><span>06 / 08</span></div>
+  <div class="kicker" style="color:var(--bad)">2026年6月24日 — 26日</div>
+  <h1 class="h1" style="color:#e8c5b0">评审期间行为规范</h1>
+
+  <div class="countdown-grid">
+    <div class="countdown-card dark-card">
+      <div class="countdown-date" style="color:var(--accent-3)">24</div>
+      <div class="countdown-label">6月24日 · 周二</div>
+      <div class="stat-note" style="color:var(--text-light-2);margin-top:1vh">准备日<br>全面自查与整改</div>
+    </div>
+    <div class="countdown-card dark-card highlight" style="border-color:var(--red);background:linear-gradient(135deg,rgba(192,57,43,.12),rgba(74,53,35,.6))">
+      <div class="countdown-date" style="color:var(--red)">25</div>
+      <div class="countdown-label" style="color:var(--red)">6月25日 · 周三</div>
+      <div class="stat-note" style="color:var(--red);margin-top:1vh;font-weight:700;font-size:1rem">⚠ 核心检查日</div>
+      <div class="stat-note" style="color:var(--text-light-2);margin-top:0.5vh">专家入校实地考察<br>全员必须高度重视</div>
+    </div>
+    <div class="countdown-card dark-card">
+      <div class="countdown-date" style="color:var(--accent-3)">26</div>
+      <div class="countdown-label">6月26日 · 周四</div>
+      <div class="stat-note" style="color:var(--text-light-2);margin-top:1vh">收尾日<br>保持状态不松懈</div>
+    </div>
+  </div>
+
+  <div class="callout red" style="margin-top:3vh">
+    <div class="callout-quote" style="font-size:1.1rem">25日是核心检查日，专家将进入校园实地考察。全体同学务必以最佳状态迎接，展现肇医学子的良好风貌。</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:3vh">
+    <div class="stat-card dark-card red-border">
+      <div class="stat-label" style="color:var(--red)">严禁行为</div>
+      <div class="stat-nb" style="font-size:1.2rem;color:var(--red)">红线</div>
+      <div class="stat-note" style="color:var(--text-light-2)">严禁穿拖鞋进入教学区或参加座谈；严禁白大褂进入教学区或参加座谈；严禁迟到、早退、旷课。</div>
+    </div>
+    <div class="stat-card dark-card">
+      <div class="stat-label">核心要求</div>
+      <div class="stat-nb" style="font-size:1.2rem">全员 · 全时 · 全力</div>
+      <div class="stat-note" style="color:var(--text-light-2)">24-26日期间全体同学务必保持通讯畅通，随时准备配合检查。课堂出勤率必须达到100%。</div>
+    </div>
+  </div>
+
+  <div class="foot" style="color:var(--text-light-2)">24日准备 · 25日核心检查 · 26日收官</div>
+</section>
+
+<!-- ============ SLIDE 7: 日常行为规范 ============ -->
+<section class="slide">
+  <div class="chrome"><span>学生规范</span><span>07 / 08</span></div>
+  <div class="kicker">日常行为准则 & 评审专项要求</div>
+  <h1 class="h1">行为规范</h1>
+
+  <!-- 课堂 + 宿舍 + 礼仪 -->
+  <div class="grid-3" style="margin-top:2vh">
+    <div class="stat-card red-border">
+      <div class="stat-label">课堂纪律</div>
+      <div class="stat-nb" style="font-size:1.3rem">守时 · 出勤</div>
+      <div class="stat-note">不迟到、不早退、不旷课。25日核心检查日保证<span class="em">全员出勤</span>，展现良好学风。</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">宿舍内务</div>
+      <div class="stat-nb" style="font-size:1.3rem">整洁 · 规范</div>
+      <div class="stat-note">做好宿舍全面卫生整理，保持内务整洁规范。24日起每日自查，<span class="em">随时可迎检</span>。</div>
+    </div>
+    <div class="stat-card red-border">
+      <div class="stat-label">仪容仪表</div>
+      <div class="stat-nb" style="font-size:1.3rem">得体 · 大方</div>
+      <div class="stat-note">穿着整洁大方，展现医学生良好精神风貌。<span class="em" style="color:#c0392b">严禁穿拖鞋、严禁白大褂进入教学区或参加座谈。</span></div>
+    </div>
+  </div>
+
+  <!-- 网络言行 -->
+  <div class="kicker" style="margin-top:4vh">网络言行规范 · 四不原则</div>
+  <div class="grid-4" style="margin-top:1.5vh">
+    <div class="stat-card">
+      <div class="stat-label">不发</div>
+      <div class="stat-nb" style="font-size:2rem">不发</div>
+      <div class="stat-note">不在任何网络平台发布有损学校形象的视频、言论</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">不传</div>
+      <div class="stat-nb" style="font-size:2rem">不传</div>
+      <div class="stat-note">不传播不利于学校的舆情信息</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">不拍</div>
+      <div class="stat-nb" style="font-size:2rem">不拍</div>
+      <div class="stat-note">遵守校园拍摄管理规定</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">不碰</div>
+      <div class="stat-nb" style="font-size:2rem">不碰</div>
+      <div class="stat-note">不触碰任何有损学校声誉的言行红线</div>
+    </div>
+  </div>
+
+  <!-- 专家问询礼仪 -->
+  <div class="callout red" style="margin-top:3vh">
+    <div class="callout-quote">如遇专家问询：主动问候"专家您好，我是XX专业学生"——眼看专家，不左顾右盼，大胆自信。不熟悉的问题请回答："这个问题我了解不够全面，会后我加强学习。"</div>
+  </div>
+
+  <div class="foot"><span>课堂守时 · 宿舍整洁 · 着装得体 · 网络自律 · 专家礼仪</span><span>07 / 08</span></div>
+</section>
+
+<!-- ============ SLIDE 8: 结尾 ============ -->
+<section class="slide end">
+  <div style="position:absolute;top:3vh;left:4vw;right:4vw;display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.65rem;letter-spacing:.15em;color:var(--text-light-2);opacity:.5">
+    <span>肇庆医学院 · 药学院</span><span>08 / 08</span>
+  </div>
+  <h1 class="cover-title" style="font-size:clamp(3rem,7vw,6rem)">谢谢！</h1>
+  <p class="cover-sub">肇庆医学院药学院</p>
+  <p class="cover-sub" style="font-size:0.9rem;margin-top:2vh">校训：大医精诚 · 知行合一</p>
+  <div class="cover-meta" style="margin-top:6vh">THANK YOU</div>
+</section>
+
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<audio id="bgm" loop preload="auto"><source src="bgm.mp3" type="audio/mpeg"></audio>
+
+<script>
+(function() {
+  const SLIDES = document.querySelectorAll('.slide');
+  const TOTAL = SLIDES.length;
+  const INTERVAL = 7000;
+  let current = 0, timer = null, manualLock = false;
+  const progressBar = document.getElementById('progressBar');
+  const bgm = document.getElementById('bgm');
+
+  function show(idx) { SLIDES.forEach((s,i) => s.classList.toggle('active', i===idx)); current = idx; progressBar.style.width = ((idx+1)/TOTAL*100) + '%'; }
+  function next() { show((current+1)%TOTAL); }
+  function prev() { show((current-1+TOTAL)%TOTAL); }
+  function startTimer() { stopTimer(); timer = setInterval(() => { if(!manualLock) next(); }, INTERVAL); }
+  function stopTimer() { if(timer) { clearInterval(timer); timer = null; } }
+
+  document.addEventListener('keydown', function(e) {
+    switch(e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ':
+        e.preventDefault();
+        if(current < TOTAL-1) { manualLock=true; stopTimer(); next(); setTimeout(()=>{manualLock=false;startTimer();},INTERVAL); }
+        break;
+      case 'ArrowLeft': case 'ArrowUp':
+        e.preventDefault();
+        if(current>0) { manualLock=true; stopTimer(); prev(); setTimeout(()=>{manualLock=false;startTimer();},INTERVAL); }
+        break;
+      case 'f': case 'F':
+        if(document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen().catch(()=>{});
+        break;
+      case 'm': case 'M': bgm.muted = !bgm.muted; break;
+    }
+  });
+
+  document.getElementById('deck').addEventListener('click', function(e) {
+    if(e.target.closest('a,button,input,textarea,select')) return;
+    manualLock=true; stopTimer(); next();
+    setTimeout(()=>{manualLock=false;startTimer();},INTERVAL);
+  });
+
+  let touchX=0,touchY=0;
+  document.getElementById('deck').addEventListener('touchstart', e=>{touchX=e.touches[0].clientX;touchY=e.touches[0].clientY;});
+  document.getElementById('deck').addEventListener('touchend', e=>{
+    const dx=e.changedTouches[0].clientX-touchX, dy=e.changedTouches[0].clientY-touchY;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){manualLock=true;stopTimer();if(dx<0)next();else prev();setTimeout(()=>{manualLock=false;startTimer();},INTERVAL);}
+  });
+
+  bgm.volume = 0.25;
+  bgm.play().catch(()=>{
+    const play=()=>{bgm.play().catch(()=>{});document.removeEventListener('click',play);document.removeEventListener('keydown',play);};
+    document.addEventListener('click', play, {once:true});
+    document.addEventListener('keydown', play, {once:true});
+  });
+
+  show(0); startTimer();
+})();
+</script>
+</body>
+</html>
